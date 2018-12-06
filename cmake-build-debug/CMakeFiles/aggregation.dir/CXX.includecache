@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/he/CLionProjects/aggregation/line_item_parser.h
+
+/home/he/CLionProjects/aggregation/main.cpp
+iostream
+-
+vector
+-
+sys/time.h
+-
+fstream
+-
+omp.h
+/home/he/CLionProjects/aggregation/omp.h
+line_item_parser.h
+/home/he/CLionProjects/aggregation/line_item_parser.h
+proj_data.h
+/home/he/CLionProjects/aggregation/proj_data.h
+
+/home/he/CLionProjects/aggregation/proj_data.h
+iostream
+-
+vector
+-
+sys/time.h
+-
+fstream
+-
+omp.h
+/home/he/CLionProjects/aggregation/omp.h
+
