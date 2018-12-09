@@ -80,6 +80,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/he/CLionProjects/aggregation/hash_table.cpp">
+			<Option target="aggregation"/>
+		</Unit>
+		<Unit filename="/home/he/CLionProjects/aggregation/hash_table.h">
+			<Option target="aggregation"/>
+		</Unit>
 		<Unit filename="/home/he/CLionProjects/aggregation/line_item_parser.cpp">
 			<Option target="aggregation"/>
 		</Unit>

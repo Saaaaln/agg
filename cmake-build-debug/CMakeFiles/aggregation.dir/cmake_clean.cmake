@@ -2,6 +2,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/aggregation.dir/main.cpp.o"
   "CMakeFiles/aggregation.dir/line_item_parser.cpp.o"
   "CMakeFiles/aggregation.dir/proj_data.cpp.o"
+  "CMakeFiles/aggregation.dir/hash_table.cpp.o"
   "aggregation.pdb"
   "aggregation"
 )

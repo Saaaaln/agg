@@ -123,6 +123,33 @@ aggregation/fast:
 	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/build
 .PHONY : aggregation/fast
 
+hash_table.o: hash_table.cpp.o
+
+.PHONY : hash_table.o
+
+# target to build an object file
+hash_table.cpp.o:
+	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/hash_table.cpp.o
+.PHONY : hash_table.cpp.o
+
+hash_table.i: hash_table.cpp.i
+
+.PHONY : hash_table.i
+
+# target to preprocess a source file
+hash_table.cpp.i:
+	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/hash_table.cpp.i
+.PHONY : hash_table.cpp.i
+
+hash_table.s: hash_table.cpp.s
+
+.PHONY : hash_table.s
+
+# target to generate assembly for a file
+hash_table.cpp.s:
+	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/hash_table.cpp.s
+.PHONY : hash_table.cpp.s
+
 line_item_parser.o: line_item_parser.cpp.o
 
 .PHONY : line_item_parser.o
@@ -213,6 +240,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... aggregation"
+	@echo "... hash_table.o"
+	@echo "... hash_table.i"
+	@echo "... hash_table.s"
 	@echo "... line_item_parser.o"
 	@echo "... line_item_parser.i"
 	@echo "... line_item_parser.s"
