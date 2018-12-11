@@ -14,11 +14,11 @@ int hash_table::hashFunction(int key) {
 
 hash_table::hash_table(int bucket_size) {
     this->bucket_size = bucket_size;
-    bucket = new list<ProjLineItem>[bucket_size];
+    bucket = new list<ProjLineItem *>[bucket_size];
 }
 
-void hash_table::insertItem(ProjLineItem projLineItem) {
-    int index = hashFunction(projLineItem.order_key);
+void hash_table::insertItem(ProjLineItem *projLineItem) {
+    int index = hashFunction((*projLineItem).order_key);
     bucket[index].push_back(projLineItem);
 }
 
@@ -42,72 +42,46 @@ void hash_table::count() {
 }
 
 void hash_table::sum() {
-    static std::vector<ProjLineItem> results;
+    std::vector<ProjLineItem> global_results;
 #if PARELLEL
-#pragma omp parallel for
+#pragma omp parallel
+    {
 #endif
-    for (int index = 0; index < bucket_size; ++index) {
-        int order_key_before = -999;
-//        int this_thread = omp_get_thread_num();
-        if (bucket[index].size() > 0) {
-            ProjLineItem projlineitem;
-            int controller = 0;
-            bucket[index].sort(sortHashBucket);
-#if DEBUG
-            auto j = bucket[index].begin();
-            for (; j != bucket[index].end(); ++j) {
-                std::cout << "order_key:" << (*j).order_key << std::endl;
+        std::vector<ProjLineItem> private_results;
+#if PARELLEL
+#pragma omp for
+#endif
+        for (int index = 0; index < bucket_size; ++index) {
+            if (bucket[index].size() > 0) {
+                std::unordered_map<int, int> map;
+                ProjLineItem projlineitem;
+                for (auto i = bucket[index].begin(); i != bucket[index].end(); ++i) {
+                    std::unordered_map<int, int>::iterator j = map.find((*i)->order_key);
+                    if (j != map.end()) {
+                        j->second += (*i)->quantity;
+                    } else {
+                        map.insert(std::pair<int, int>((*i)->order_key, (*i)->quantity));
+                    }
+                }
+                for (auto k = map.begin(); k != map.end(); ++k) {
+                    projlineitem.order_key = k->first;
+                    projlineitem.quantity = k->second;
+                    private_results.push_back(projlineitem);
+                }
             }
-#endif
-            for (auto i = bucket[index].begin(); i != bucket[index].end(); ++i) {
-                projlineitem.order_key = (*i).order_key;
-                if (i == bucket[index].begin()) {
-                    order_key_before = projlineitem.order_key;
-                }
-                if (order_key_before == (*i).order_key) {
-                    projlineitem.quantity += (*i).quantity;
-                } else {
-                    int mid = projlineitem.order_key;
-                    projlineitem.order_key = order_key_before;
+        }
 #if PARELLEL
-                    //                    omp_set_lock(&lock);
-#endif
-#pragma omp critical
-                    results.push_back(projlineitem);
-#if PARELLEL
-                    //                    omp_unset_lock(&lock);
-#endif
-                    order_key_before = mid;
-                    projlineitem.order_key = (*i).order_key;
-                    projlineitem.quantity = (*i).quantity;
-                }
-                ++controller;
-#if DEBUG
-                std::cout << "bucket[index].order_key:" << (*i).order_key << std::endl;
-                std::cout << "bucket[index].quantity:" << (*i).quantity << std::endl;
-                std::cout << "projlineitem.order_key:" << projlineitem.order_key << std::endl;
-                std::cout << "projlineitem.quantity:" << projlineitem.quantity << std::endl;
-#endif
-                if (controller == bucket[index].size() && order_key_before == (*i).order_key) {
-#if PARELLEL
-                    //                    omp_set_lock(&lock);
-#endif
-#pragma omp critical
-                    results.push_back(projlineitem);
-#if PARELLEL
-                    //                    omp_unset_lock(&lock);
-#endif
-                    projlineitem.quantity = 0;
-                }
-#if DEBUG
-                std::cout << "result.size:" << results.size() << std::endl;
-#endif
+        for (int t = 0; t < omp_get_num_threads(); t++) {
+#pragma omp barrier
+            if (t == omp_get_thread_num()) {
+//#pragma omp critical
+                global_results.insert(global_results.end(), private_results.begin(), private_results.end());
             }
         }
     }
-    std::cout << "result.size:" << results.size() << std::endl;
+    std::cout << global_results.size() << std::endl;
+#endif
 }
-
 
 //get keys
 //    int index = hashFunction((*items)[i].order_key);

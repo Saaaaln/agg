@@ -59,10 +59,10 @@ RM = /home/he/Downloads/clion-2018.2.5/bin/cmake/linux/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/he/CLionProjects/aggregation
+CMAKE_SOURCE_DIR = /home/he/imdb/aggregation
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/he/CLionProjects/aggregation/cmake-build-debug
+CMAKE_BINARY_DIR = /home/he/imdb/aggregation/cmake-build-debug
 
 #=============================================================================
 # Target rules for target CMakeFiles/aggregation.dir
@@ -71,7 +71,7 @@ CMAKE_BINARY_DIR = /home/he/CLionProjects/aggregation/cmake-build-debug
 CMakeFiles/aggregation.dir/all:
 	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/depend
 	$(MAKE) -f CMakeFiles/aggregation.dir/build.make CMakeFiles/aggregation.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/he/CLionProjects/aggregation/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5 "Built target aggregation"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/he/imdb/aggregation/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5 "Built target aggregation"
 .PHONY : CMakeFiles/aggregation.dir/all
 
 # Include target in all.
@@ -81,9 +81,9 @@ all: CMakeFiles/aggregation.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/aggregation.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/he/CLionProjects/aggregation/cmake-build-debug/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/he/imdb/aggregation/cmake-build-debug/CMakeFiles 5
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/aggregation.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/he/CLionProjects/aggregation/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/he/imdb/aggregation/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/aggregation.dir/rule
 
 # Convenience name for target.
