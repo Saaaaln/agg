@@ -15,11 +15,15 @@
 #define BLOCK_TUPLE 1023
 #define BLOCK_SIZE 8192
 
+#define NODE_NUM 1  //worker node numbers
+#define MODE 0 //0 is remote, 1 is local
+#define W_DEBUG 0  //connect node numbers
+
+
+
+
 //#define BLOCK_TUPLE 127
 //#define BLOCK_SIZE 1024
-
-#define NODE_NUM 1
-
 
 //#define BLOCK_TUPLE 2047
 //#define BLOCK_SIZE 16384 //64*1024=65536 =BLOCK_TUPLE*8+8

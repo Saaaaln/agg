@@ -15,11 +15,12 @@
 #include "hash_table.h"
 #include "omp.h"
 
-#define MODE 1 //0 is remote, 1 is local
-
 static int node_id = 0;
+
+#if W_DEBUG
 static int write_no = 0;
 static int total_nums = 0;
+#endif
 
 int connect() {
     //build connect
@@ -57,6 +58,7 @@ int connect() {
     return sfd;
 }
 
+#if W_DEBUG
 void showblock(char *block) {
     int node;
     int data_num;
@@ -65,13 +67,16 @@ void showblock(char *block) {
     total_nums += data_num;
     std::cout << ",write_no:" << node << ",data num:" << data_num << ",write tuples:" << total_nums << std::endl;
 }
+#endif
 
 bool sendbuf(NetBuffer *netbuffer) {
     if (!netbuffer->ilist.empty()) {
         char *front = netbuffer->ilist.front();
         int ret = write(netbuffer->sfd, front, BLOCK_SIZE);
+#if W_DEBUG
         std::cout << "ret:" << ret;
         showblock(front);
+#endif
         netbuffer->ilist.pop_front();
         delete[]front;
         return true;
@@ -101,14 +106,20 @@ void producer(std::vector<ProjLineItem *> *ivec, NetBuffer *netbuffer) {
 
             //putbuf
             char *send_block = new char[BLOCK_SIZE];
-//                    memcpy(send_block, &node, 4);
+            memcpy(send_block, &node, 4);
+#if W_DEBUG
             memcpy(send_block, &write_no, 4);
             memcpy(send_block + 4, &data_num, 4);
             memcpy(send_block + 8, block, BLOCK_SIZE - 8);
             netbuffer->ilist.push_back(send_block);
             ++write_no;
-
-            memset(block, '\0', BLOCK_SIZE);
+#else
+            memcpy(send_block, &node, 4);
+            memcpy(send_block + 4, &data_num, 4);
+            memcpy(send_block + 8, block, block_data_size);
+            netbuffer->ilist.push_back(send_block);
+#endif
+            memset(block, '\0', block_data_size);
             pos_at_block = 0;
         }
     }
@@ -196,71 +207,6 @@ void count_producer(hash_table *ht, NetBuffer *netbuffer) {
 
 
 void sum_producer(hash_table *ht, NetBuffer *netbuffer) {
-//    int pos_at_block = 0;
-//    int count = 0;
-//    int start = 0;
-//    int end = HASH_SIZE;
-//    int block_data_size = BLOCK_SIZE - 8;
-//    char block[block_data_size];
-//    memset(block, '\n', block_data_size);
-//    for (int index = start; index != end; ++index) {
-//        if (ht->bucket[index].size() > 0) {
-////                std::cout << "index:" << index << ", bucket[index].size()" << ht->bucket[index].size() << std::endl;
-//            std::unordered_map<int, int> map;
-//            ProjLineItem projlineitem;
-//            for (auto i = ht->bucket[index].begin(); i != ht->bucket[index].end(); ++i) {
-//                std::unordered_map<int, int>::iterator j = map.find((*i)->order_key);
-//                if (j != map.end()) {
-//                    j->second += (*i)->quantity;
-//                } else {
-//                    map.insert(std::pair<int, int>((*i)->order_key, (*i)->quantity));
-//                }
-//            }
-//            for (auto k = map.begin(); k != map.end(); ++k) {
-//                ProjLineItem projlineitem;
-//                projlineitem.order_key = k->first;
-//                projlineitem.quantity = k->second;
-////                    std::cout << "tuple:" << projlineitem.order_key << "," << projlineitem.quantity << std::endl;
-//                memcpy(block + pos_at_block * TUPLE_SIZE, &projlineitem, TUPLE_SIZE);
-//                ++pos_at_block;
-//                ++count;
-//                if ((count != 0 && count % BLOCK_TUPLE == 0)) {
-//                    //putbuf
-//                    omp_set_lock(&(netbuffer->insert_mutex));
-//                    char *send_block = new char[BLOCK_SIZE];
-////                        memcpy(send_block, &node_id, 4);
-//                    memcpy(send_block, &write_no, 4);
-//                    memcpy(send_block + 4, &pos_at_block, 4);
-//                    memcpy(send_block + 8, block, block_data_size);
-//                    netbuffer->ilist.push_back(send_block);
-////                        std::cout << "push thread_num:" << thread_num << ", data_num" << data_num << std::endl;
-//                    ++write_no;
-//                    omp_unset_lock(&(netbuffer->insert_mutex));
-//
-//                    memset(block, '\n', block_data_size);
-//                    pos_at_block = 0;
-//                }
-//            }
-//        }
-//        if (index == (end - 1)) {
-//            //putbuf
-//            omp_set_lock(&(netbuffer->insert_mutex));
-//            char *send_block = new char[BLOCK_SIZE];
-////                memcpy(send_block, &node_id, 4);
-//            memcpy(send_block, &write_no, 4);
-//            memcpy(send_block + 4, &pos_at_block, 4);
-//            memcpy(send_block + 8, block, BLOCK_SIZE - 8);
-//            netbuffer->ilist.push_back(send_block);
-//            ++write_no;
-//            omp_unset_lock(&(netbuffer->insert_mutex));
-//
-////                std::cout << "last one:" << pos_at_block << std::endl;
-//            memset(block, '\n', BLOCK_SIZE);
-//            pos_at_block = 0;
-//        }
-//    }
-
-
 #pragma omp parallel
     {
         int hash_size = HASH_SIZE;
@@ -272,12 +218,10 @@ void sum_producer(hash_table *ht, NetBuffer *netbuffer) {
         int end = (thread_num + 1) * hash_size / total_threads;
         int block_data_size = BLOCK_SIZE - 8;
         char block[block_data_size];
-        memset(block, '\n', block_data_size);
+        memset(block, '\0', block_data_size);
         for (int index = start; index != end; ++index) {
             if (ht->bucket[index].size() > 0) {
-//                std::cout << "index:" << index << ", bucket[index].size()" << ht->bucket[index].size() << std::endl;
                 std::unordered_map<int, int> map;
-                ProjLineItem projlineitem;
                 for (auto i = ht->bucket[index].begin(); i != ht->bucket[index].end(); ++i) {
                     std::unordered_map<int, int>::iterator j = map.find((*i)->order_key);
                     if (j != map.end()) {
@@ -290,7 +234,6 @@ void sum_producer(hash_table *ht, NetBuffer *netbuffer) {
                     ProjLineItem projlineitem;
                     projlineitem.order_key = k->first;
                     projlineitem.quantity = k->second;
-//                    std::cout << "tuple:" << projlineitem.order_key << "," << projlineitem.quantity << std::endl;
                     memcpy(block + pos_at_block * TUPLE_SIZE, &projlineitem, TUPLE_SIZE);
                     ++pos_at_block;
                     ++count;
@@ -298,38 +241,57 @@ void sum_producer(hash_table *ht, NetBuffer *netbuffer) {
                         //putbuf
                         omp_set_lock(&(netbuffer->insert_mutex));
                         char *send_block = new char[BLOCK_SIZE];
-//                        memcpy(send_block, &node_id, 4);
+#if W_DEBUG
                         memcpy(send_block, &write_no, 4);
                         memcpy(send_block + 4, &pos_at_block, 4);
                         memcpy(send_block + 8, block, block_data_size);
                         netbuffer->ilist.push_back(send_block);
 //                        std::cout << "push thread_num:" << thread_num << ", data_num" << data_num << std::endl;
                         ++write_no;
+#else
+                        memcpy(send_block, &node_id, 4);
+                        memcpy(send_block + 4, &pos_at_block, 4);
+                        memcpy(send_block + 8, block, block_data_size);
+                        netbuffer->ilist.push_back(send_block);
+#endif
+//                        memcpy(send_block, &node_id, 4);
                         omp_unset_lock(&(netbuffer->insert_mutex));
 
-                        memset(block, '\n', block_data_size);
+                        memset(block, '\0', block_data_size);
                         pos_at_block = 0;
                     }
                 }
             }
             if (index == (end - 1)) {
-                //putbuf
                 omp_set_lock(&(netbuffer->insert_mutex));
                 char *send_block = new char[BLOCK_SIZE];
-//                memcpy(send_block, &node_id, 4);
+#if W_DEBUG
                 memcpy(send_block, &write_no, 4);
                 memcpy(send_block + 4, &pos_at_block, 4);
-                memcpy(send_block + 8, block, BLOCK_SIZE - 8);
+                memcpy(send_block + 8, block, block_data_size);
                 netbuffer->ilist.push_back(send_block);
                 ++write_no;
+#else
+                memcpy(send_block, &node_id, 4);
+                memcpy(send_block + 4, &pos_at_block, 4);
+                memcpy(send_block + 8, block, block_data_size);
+                netbuffer->ilist.push_back(send_block);
+#endif
                 omp_unset_lock(&(netbuffer->insert_mutex));
 
-//                std::cout << "last one:" << pos_at_block << std::endl;
                 memset(block, '\n', BLOCK_SIZE);
                 pos_at_block = 0;
             }
         }
     }
+
+    int end = -1;
+    char *end_message = new char[BLOCK_SIZE];
+    memset(end_message, '\0', BLOCK_SIZE);
+    memcpy(end_message, &node_id, 4);
+    memcpy(end_message + 4, &end, 4);
+    netbuffer->ilist.push_back(end_message);
+
     std::cout << " ";
     netbuffer->done = 1;
 }
@@ -423,7 +385,9 @@ int main() {
                 consumer(netbuffer);
             }
         }
+#if W_DEBUG
         std::cout << "total write data:" << total_nums << std::endl;
+#endif
         std::cout << "local sum and send to coordinator complete" << std::endl;
     } else if (choice == 3) {
         //select L_ORDERDEY, SUM(L_QUANTITY) from LINEITEM GROUP BY L_ORDERKEY
@@ -441,6 +405,12 @@ int main() {
             }
         }
     }
+
+    for (int i = 0; i < items->size(); ++i) {
+        delete (*items)[i];
+    }
+    delete items;
+    delete ht;
     close(sfd);
     return 0;
 }

@@ -13,16 +13,17 @@
 #include <errno.h>
 #include <iostream>
 #include <vector>
+#include "hash_table.h"
 #include "net_buffer.h"
 #include "line_item_parser.h"
-
-#define MAX_EVENTS 64
 
 static int epoll = 0;
 static int sd = 0;
 static int sfd = 0;
 struct timeval t1, t2;
+#if W_DEBUG
 static int read_tuples = 0;
+#endif
 
 static int create_and_bind(const char *port);
 
@@ -179,25 +180,32 @@ std::vector<ProjLineItem *> *dowork(int choice, epoll_event event, epoll_event e
                             int data_num;
                             memcpy(&node, buf, 4);
                             memcpy(&data_num, buf + 4, 4);
+#if W_DEBUG
                             read_tuples += data_num;
                             std::cout << "read_no: " << node << ", data num:" << data_num << ", read_tuples:"
                                       << read_tuples << std::endl;
+#endif
 
-//                            for (int j = 0; j < data_num; ++j) {
-//                                ProjLineItem *proj = new ProjLineItem;
-//                                memcpy(proj, buf + TUPLE_SIZE * (j + 1), TUPLE_SIZE);
-//                                std::cout << "ProjLineItem:" << proj->order_key << "," << proj->quantity << std::endl;
-//                            }
-//                            std::cout << "results:" << results->size() << std::endl;
+                            for (int j = 0; j < data_num; ++j) {
+                                ProjLineItem *proj = new ProjLineItem;
+                                memcpy(proj, buf + TUPLE_SIZE * (j + 1), TUPLE_SIZE);
+                                results->push_back(proj);
+                            }
+                            if (data_num == -1) {
+                                ++rec_node;
+                                if (rec_node == NODE_NUM) return results;
+                            }
+
                         } else if (choice == 3) {
                             int node;
                             int data_num;
                             memcpy(&node, buf, 4);
                             memcpy(&data_num, buf + 4, 4);
+#if W_DEBUG
                             read_tuples += data_num;
                             std::cout << "ret:" << ret << ",read_no: " << node << ", data num:" << data_num
                                       << ", read_tuples:" << read_tuples << std::endl;
-
+#endif
 //                            ProjLineItem *proj = new ProjLineItem;
 //                            memcpy(proj, buf + 8, TUPLE_SIZE);
 //                            std::cout << "order_key:" << proj->order_key << ",quantity :" << proj->quantity
@@ -264,8 +272,26 @@ int main() {
         exit(1);
     }
 
-    dowork(choice, event, events);
+    std::vector<ProjLineItem *> *result = dowork(choice, event, events);
 
     close(sfd);
+
+    if (choice == 2) {
+        hash_table *ht = new hash_table(HASH_SIZE);
+        for (int i = 0; i < result->size(); ++i) {
+            ht->insertItem((*result)[i]);
+        }
+        ht->sum();
+        gettimeofday(&t2, NULL);
+        int deltaT = (t2.tv_sec - t1.tv_sec) * 1000000 + t2.tv_usec - t1.tv_usec;
+        std::cout << "--------cost time: " << deltaT * 1.0 / 1000 << " ms" << std::endl;
+        delete ht;
+    }
+
+    for (int i = 0; i < result->size(); ++i) {
+        delete (*result)[i];
+    }
+    delete result;
+    return 0;
 }
 
