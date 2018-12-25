@@ -6,6 +6,7 @@
 #include <fstream>
 #include <algorithm>
 #include <sys/time.h>
+#include <vector>
 #include <string.h>
 
 
@@ -31,11 +32,6 @@ struct LineItem {
         output << item.order_key << "|" << item.quantity << "|";
         return output;
     }
-
-//    friend std::ostream &operator<<(std::ostream &output, const LineItem &item) {
-//        output << "LineItem: {Order key: " << item.order_key << "; Part key: " << item.part_key << "; Supp key: " << item.supp_key << "}";
-//        return output;
-//    }
 };
 
 
@@ -53,7 +49,7 @@ struct ProjLineItem {
     }
 };
 
-std::vector<ProjLineItem> *ReadAndParseProjLineItems(const std::string &file_path);
+std::vector<ProjLineItem *> *ReadAndParseProjLineItems(const std::string &file_path);
 
 
 #endif //AGGREGATION_LINE_ITEM_PARSER_H

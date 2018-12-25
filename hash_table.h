@@ -10,14 +10,13 @@
 #include "omp.h"
 #include "line_item_parser.h"
 
+#define DEBUG 0
+#define PARELLEL 1
+#define HASH_SIZE 1048576 //or 524288
+
 using namespace std;
 
 class hash_table {
-    int bucket_size;
-
-    list<ProjLineItem *> *bucket;
-
-    omp_lock_t lock;
 
 public:
 
@@ -25,20 +24,26 @@ public:
 
     void insertItem(ProjLineItem *projLineItem);
 
+    void para_insertItem(vector<ProjLineItem> *items);
+
     int hashFunction(int x);
 
-    void count();
+    int count();
 
-    void sum();
+    vector<ProjLineItem> sum();
 
-    static bool sortHashBucket2(const ProjLineItem *&p1, const ProjLineItem *&p2) {
-        return p1->order_key < p2->order_key;
-    }
+    void distributed_count();
+
+    void distributed_sum();
+
 
     static bool sortHashBucket(const ProjLineItem &p1, const ProjLineItem &p2) {
         return p1.order_key < p2.order_key;
     }
 
+    int bucket_size;
+
+    list<ProjLineItem *> *bucket;
 };
 
 

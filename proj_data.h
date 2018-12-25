@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <fstream>
 #include "omp.h"
-//#include "table.h"
 
 void proj_tpch1();
 

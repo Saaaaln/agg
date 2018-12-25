@@ -36,7 +36,7 @@ const tm ReadDate(std::ifstream &in_file) {
 std::vector<LineItem> &ReadAndParseLineItems(const std::string &file_path) {
     std::vector<LineItem> &items = *new std::vector<LineItem>;
 
-    std::ifstream in_file(file_path);
+    std::ifstream in_file(file_path.c_str());
 
     if (!in_file.good()) {
         std::cerr << "File '" << file_path << "' does not exist\n";
@@ -77,7 +77,7 @@ std::vector<LineItem> &ReadAndParseLineItems(const std::string &file_path) {
 void ReadAndProjAllLineItems(const std::string &file_path) {
     std::vector<LineItem> &items = *new std::vector<LineItem>;
 
-    std::ifstream in_file(file_path);
+    std::ifstream in_file(file_path.c_str());
 
     if (!in_file.good()) {
         std::cerr << "File '" << file_path << "' does not exist\n";
@@ -95,7 +95,7 @@ void ReadAndProjAllLineItems(const std::string &file_path) {
     gettimeofday(&t1, NULL);
 
     std::ofstream dataFile;
-    dataFile.open("/home/he/Desktop/proj_lineitem_sf100.tbl", std::ofstream::app);
+    dataFile.open("/home/he/Desktop/proj_lineitem_sf50.tbl", std::ofstream::app);
 
     while (in_file >> current.order_key >> delimiter
                    >> current.part_key >> delimiter
@@ -147,10 +147,10 @@ void ReadAndProjAllLineItems(const std::string &file_path) {
 }
 
 
-std::vector<ProjLineItem> *ReadAndParseProjLineItems(const std::string &file_path) {
-    std::vector<ProjLineItem> *items = new std::vector<ProjLineItem>;
+std::vector<ProjLineItem *> *ReadAndParseProjLineItems(const std::string &file_path) {
+    std::vector<ProjLineItem *> *items = new std::vector<ProjLineItem *>;
 
-    std::ifstream in_file(file_path);
+    std::ifstream in_file(file_path.c_str());
 
     if (!in_file.good()) {
         std::cerr << "File '" << file_path << "' does not exist\n";
@@ -162,10 +162,12 @@ std::vector<ProjLineItem> *ReadAndParseProjLineItems(const std::string &file_pat
     while (in_file >> current.order_key >> delimiter
                    >> current.quantity >> delimiter
             ) {
-        items->push_back(current);
+        ProjLineItem *p1 = new ProjLineItem();
+        p1->order_key = current.order_key;
+        p1->quantity = current.quantity;
+        items->push_back(p1);
     }
-    // Include some spaces to overwrite big numbers that might be printed above
-//	std::cout << "Done reading line items     \n";
+
 //	std::random_shuffle(items.begin(), items.end(), random);
     return items;
 }

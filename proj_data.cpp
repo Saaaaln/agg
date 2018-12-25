@@ -42,5 +42,5 @@ void proj_tpch1() {
 
 void proj_tpch10() {
     std::cout << "begin" << std::endl;
-    ReadAndProjAllLineItems("/home/he/Desktop/lineitem100.tbl");
+    ReadAndProjAllLineItems("/home/he/Desktop/lineitem50.tbl");
 }
